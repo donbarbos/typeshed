@@ -49,22 +49,47 @@ jobs:
       - name: Run stubtest
         run: python tests/stubtest_stdlib.py
 
-  stubtest-stdlib-freebsd:
-    name: "stubtest: stdlib (freebsd-15, 3.12)"
+  stubtest-stdlib-other-platforms:
+    name: "stubtest: stdlib"
     runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        os: ["freebsd-15.0", "openbsd-7.8", "solaris-11.4"]
+
     steps:
       - uses: actions/checkout@v5
-      - uses: vmactions/freebsd-vm@v1
+      - name: Run stubtest on ${{ matrix.os }}
+        uses: vmactions/freebsd-vm@v1
+        if: ${{ matrix.os == "freebsd-15.0" }}
         with:
           release: "15.0"
           usesh: true
           prepare: |
-            pkg install -y python312
+            pkg install -y python311 py311-pip
           run: |
-            python3 --version
-            python3.12 --version
-            pip --version
-            pip3 --version
-            pip3.12 --version
             pip install -r requirements-tests.txt
-            python tests/stubtest_stdlib.py
+            python3.11 tests/stubtest_stdlib.py
+
+      - name: Run stubtest on ${{ matrix.os }}
+        uses: vmactions/openbsd-vm@v1
+        if: ${{ matrix.os == "openbsd-7.8" }}
+        with:
+          release: "7.8"
+          usesh: true
+          prepare: |
+            pkg_add python312 py312-pip
+          run: |
+            pip install -r requirements-tests.txt
+            python3 tests/stubtest_stdlib.py
+
+      - name: Run stubtest on ${{ matrix.os }}
+        uses: vmactions/solaris-vm@v1
+        if: ${{ matrix.os == "solaris-11.4" }}
+        with:
+          release: "11.4"
+          usesh: true
+          prepare: |
+            pkgutil -y -i python312 py312-pip
+          run: |
+            pip install -r requirements-tests.txt
+            python3 tests/stubtest_stdlib.py
