@@ -48,3 +48,23 @@ jobs:
         run: pip install -r requirements-tests.txt
       - name: Run stubtest
         run: python tests/stubtest_stdlib.py
+
+  stubtest-stdlib-freebsd:
+    name: "stubtest: stdlib (freebsd-15, 3.12)"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: vmactions/freebsd-vm@v1
+        with:
+          release: "15.0"
+          usesh: true
+          prepare: |
+            pkg install -y python312
+          run: |
+            python3 --version
+            python3.12 --version
+            pip --version
+            pip3 --version
+            pip3.12 --version
+            pip install -r requirements-tests.txt
+            python tests/stubtest_stdlib.py
